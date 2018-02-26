@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <math.h>
-#include <C6X.h>
-#include <yj6701.h>
+#include "../include/yj6701.h"
 
 /********************************获取最大值帧索引************************************/
 void getMaxIndex(void)	//1560ms

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <yj6701.h>
+#include "../include/yj6701.h"
 #include <string.h>
 
 /*****************************************参数*********************************************/
@@ -79,16 +79,17 @@ unsigned int	g_stepInject	= 0;								//注入进行到的步骤
 /******************************************************************************************/
 
 /**************************************函数声明********************************************/
-extern void SetupInterrupts(void);
-extern void emifRecvImg(void);
 extern void matchMain(unsigned int curID,unsigned short **img);
 extern void star(float starList[5][480], unsigned short *starNum);
 extern void move(void);
 extern void emifSend(unsigned short *starCnt,short moveCnt);
-extern void emifRecvEE(void);
-extern void beginInject(void);
 extern void para2value(unsigned int *para);
 /******************************************************************************************/
+#ifdef TI_PLATFORM
+extern void SetupInterrupts(void);
+extern void emifRecvImg(void);
+extern void emifRecvEE(void);
+extern void beginInject(void);
 
 /****************************************中断**********************************************/
 interrupt void FrameIsr4 (void)
@@ -168,3 +169,37 @@ void main(void)
 		}
 	}
 }
+#else
+int main(void)
+{
+	memset((unsigned char *)0x00400000,0,IMG_WID*IMG_HEI*2);
+	while(1)
+	{
+		if((g_frameNum_r < g_frameNum) && (g_injectNum == 0))//判断接收到新的图像并且不注入
+		{
+			if((g_frameNum_r%2) && (g_frameNum_r != 0))		//配准
+			{
+				g_controlWord[g_frameNum_r/2%5]		= *(unsigned int *)0x03140000;		//"0101"控制参数
+				g_captureTime[g_frameNum_r/2%5][0]	= *(unsigned int *)0x03240000;		//"1001"时间秒值
+				g_captureTime[g_frameNum_r/2%5][1]	= *(unsigned int *)0x03280000;		//"1010"时间微秒值
+				matchMain(g_frameNum_r/2%5,g_imgRmb);
+			}
+			g_frameNum_r = g_frameNum;						//更新帧号_r
+			if((g_frameNum%10 == 0) && (g_frameNum != 0))	//当接收够5帧图像
+			{
+				para2value(g_controlWord);
+				star(g_starPosi,g_starSum);					//确定恒星目标
+				move();										//确定运动目标
+				emifSend(g_starSum,g_moveSum);				//发送数据
+				if(g_frameNum>=172800)
+				{
+					g_frameNum = 0;
+					g_frameNum_r = 0;
+				}
+			}
+		}
+	}
+
+	return 1;
+}
+#endif

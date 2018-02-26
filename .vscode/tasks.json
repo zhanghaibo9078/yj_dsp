@@ -8,7 +8,7 @@
             "type": "shell",
             "command": "g++",
             "args": [
-                "-g","*.c","-o","yj_dsp.exe"
+                "-g","src/*.c","-o","yj_dsp.exe"
             ]
         }
     ]

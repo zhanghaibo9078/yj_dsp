@@ -1,7 +1,7 @@
 #pragma once
 #include <stdio.h>
 #include <math.h>
-#include <yj6701.h>
+#include "../include/yj6701.h"
 
 //初始化配准要用的缓冲区
 //stars[5][10]：结构体，存储待配准星

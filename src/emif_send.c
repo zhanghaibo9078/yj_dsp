@@ -1,11 +1,6 @@
-#include <STDIO.H>    
-#include <CSL.H>    
-#include <CSL_IRQ.H>    
-#include <CSL_CHIP.H>    
-#include <CSL_EMIF.H>    
-#include <CSL_IRQ.H> 
+#include <STDIO.H>
 #include <MATH.H>
-#include <yj6701.h>
+#include "../include/yj6701.h"
 
 void emifSend(unsigned short *starCnt,short moveCnt)
 {

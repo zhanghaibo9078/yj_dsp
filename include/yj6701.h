@@ -2,6 +2,9 @@
     This is head program
     Auther by duanxiaofeng
 *****************************************/
+#ifndef GCC_PLATFORM
+#define GCC_PLATFORM
+#endif
 
 #ifndef YJ6701_H_
 #define YJ6701_H_
@@ -9,7 +12,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include <STDIO.H>  
+#include <STDIO.H>
+#include <string.h> 
 /**********************************************************************************/
 /*********************内存映射采用map1方式*****************************************/
 /********0000 0000 - 0000 FFFF     64KBYTE   程序存储区****************************/
