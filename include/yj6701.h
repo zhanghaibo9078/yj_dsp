@@ -13,7 +13,8 @@
 extern "C" {
 #endif
 #include <STDIO.H>
-#include <string.h> 
+#include <string.h>
+#include <malloc.h>
 /**********************************************************************************/
 /*********************内存映射采用map1方式*****************************************/
 /********0000 0000 - 0000 FFFF     64KBYTE   程序存储区****************************/
@@ -149,7 +150,15 @@ extern unsigned int		 g_lenArea00;			//00区占字节数
 extern unsigned int	 	 g_lenArea80;			//80区占字节数
 extern unsigned int	 	 g_stepInject;			//注入进行到的步骤
 /**********************************************************************/
-
+#ifdef GCC_PLATFORM
+extern void init();
+extern int readFile(char *str,int frmBeg,unsigned int time[5][2], unsigned int *framePara,unsigned int *control_word);
+extern void filter(unsigned short **inImg,unsigned short **outImg,unsigned short cnt,unsigned short window,unsigned short wid,unsigned short hei);
+extern void writeImg(void *p,char *str,unsigned int len);
+extern void writePosi(int frm);
+extern FILE *fWriteHex;
+extern void save(unsigned short frameCnt, unsigned short *starCnt, short moveCnt);
+#endif
 #ifdef __cplusplus
 }
 #endif

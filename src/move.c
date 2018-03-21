@@ -70,7 +70,6 @@ void getMaxIndex(void)	//1560ms
 		//最大值帧索引应保持原形，因为求质心过程要用到
 		memcpy(g_maxIndex + row*IMG_WID, s_maxIdx, 1024);
 	}
-
 	return;
 }
 
@@ -242,7 +241,9 @@ unsigned short movepath(unsigned short regionCount)
 	unsigned char is_continue = 1;							//是否继续执行下一个for循环
 
 	memset(g_allObjInf,0,4096*2);
+	#ifdef TI_PLATFORM
 	memset(objPointF[0],0,8192*5);
+	#endif
 	
 	for(i=0;i<regionCount;i++)
 	{

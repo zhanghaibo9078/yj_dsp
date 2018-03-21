@@ -85,6 +85,8 @@ extern void move(void);
 extern void emifSend(unsigned short *starCnt,short moveCnt);
 extern void para2value(unsigned int *para);
 /******************************************************************************************/
+
+#pragma region 
 #ifdef TI_PLATFORM
 extern void SetupInterrupts(void);
 extern void emifRecvImg(void);
@@ -169,37 +171,44 @@ void main(void)
 		}
 	}
 }
+#pragma endregion 
 #else
+FILE *fWriteHex;
 int main(void)
 {
-	memset((unsigned char *)0x00400000,0,IMG_WID*IMG_HEI*2);
-	while(1)
+	init();
+	int frm = 0;
+	for (frm = 1; frm<250;)
 	{
-		if((g_frameNum_r < g_frameNum) && (g_injectNum == 0))//判断接收到新的图像并且不注入
+		printf("开始处理帧号:%d-%d\n", frm, frm + 4);
+		if (readFile("F:\\YJ\\2017年2月兴隆拍摄数据\\兴隆2图像\\区域凝视\\BDG1-300ms\\", frm, g_captureTime, &g_frameNumber, g_controlWord) == 0)
 		{
-			if((g_frameNum_r%2) && (g_frameNum_r != 0))		//配准
-			{
-				g_controlWord[g_frameNum_r/2%5]		= *(unsigned int *)0x03140000;		//"0101"控制参数
-				g_captureTime[g_frameNum_r/2%5][0]	= *(unsigned int *)0x03240000;		//"1001"时间秒值
-				g_captureTime[g_frameNum_r/2%5][1]	= *(unsigned int *)0x03280000;		//"1010"时间微秒值
-				matchMain(g_frameNum_r/2%5,g_imgRmb);
-			}
-			g_frameNum_r = g_frameNum;						//更新帧号_r
-			if((g_frameNum%10 == 0) && (g_frameNum != 0))	//当接收够5帧图像
-			{
-				para2value(g_controlWord);
-				star(g_starPosi,g_starSum);					//确定恒星目标
-				move();										//确定运动目标
-				emifSend(g_starSum,g_moveSum);				//发送数据
-				if(g_frameNum>=172800)
-				{
-					g_frameNum = 0;
-					g_frameNum_r = 0;
-				}
-			}
+			printf("文件不存在，结束！");
+			break;
 		}
-	}
+		filter(g_imgOrig, g_imgRmb, 1, 32, IMG_WID, IMG_HEI);
+		for (int i = 0; i<5; i++)
+			matchMain(i % 5, g_imgRmb);
+		printf("配准结果\n");
+		printf("配准:r1:%d,c1:%d  r2:%d,c2:%d  r3:%d,c3:%d  r4:%d,c4:%d\n", g_offsetR[1], g_offsetC[1], g_offsetR[2], g_offsetC[2], g_offsetR[3], g_offsetC[3], g_offsetR[4], g_offsetC[4]);
+		para2value(g_controlWord);
+		printf("执行参数\n");
+		printf("二值化参数：%d\n",g_thresholdBW);
+		printf("去噪索引参数：%d\n",g_thresholdMW);
+		printf("背景预处理参数：%d\n",g_thresholdBCK);
 
+		star(g_starPosi,g_starSum);					//确定恒星目标
+		printf("处理结果\n");
+		printf("恒星目标:%d %d %d %d %d\n", g_starSum[0], g_starSum[1], g_starSum[2], g_starSum[3], g_starSum[4]);
+		move();										//确定运动目标
+		printf("运动目标:%d\n", g_moveSum);
+		writeImg(g_corImg,"data/去噪后.raw",IMG_FRM);
+		writePosi(frm);
+		save(frm,g_starSum,g_moveSum);
+		frm += 5;
+	}
+	fclose(fWriteHex);
+	getchar();
 	return 1;
 }
 #endif
